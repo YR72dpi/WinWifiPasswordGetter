@@ -29,28 +29,40 @@ RegexOptions options = RegexOptions.Multiline;
 List<string> allWifi = new();
 foreach (Match m in Regex.Matches(info, pattern, options))
 {
-    string wifiName = m.Value.Split(":")[1].Trim().Replace("\n", "");
+    string wifiName = m.Value.Replace(" : ", "-SPPS-").Split(":")[1].Trim().Replace("-SPPS-", " : ").Replace("\n", "");
     //Console.WriteLine(wifiName);
     allWifi.Add(wifiName);
 }
 
 foreach(string wifiName in allWifi)
 {
-        Console.WriteLine(wifiName);
-    //Console.WriteLine($"wlan show profiles {wifiName} key=clear");
+        //Console.WriteLine(wifiName);
+        //Console.WriteLine($"wlan show profiles {wifiName} key=clear");
         Process pwdInfo = new Process
         {
             StartInfo =
                 {
                     FileName = "cmd.exe",
                     //WorkingDirectory = @"C:\myproject",
-                    Arguments = $"/C chcp 437 && netsh wlan show profiles {wifiName} key=clear"
+                    Arguments = $"/C netsh wlan show profiles {wifiName} key=clear"
                 }
         };
 
-        /*pwdInfo.StartInfo.RedirectStandardOutput = true;
+        pwdInfo.StartInfo.RedirectStandardOutput = true;
         pwdInfo.StartInfo.RedirectStandardError = true;
-        pwdInfo.StartInfo.UseShellExecute = false;*/
+        pwdInfo.StartInfo.UseShellExecute = false;
         pwdInfo.Start();
         pwdInfo.WaitForExit();
+
+        string RawSecurityInfo = "@" + pwdInfo.StandardOutput.ReadToEnd();
+        //Console.WriteLine(RawSecurityInfo);
+
+        string pattern2 = @" *Contenu de la clé *: (.*)";
+
+        foreach (Match m in Regex.Matches(RawSecurityInfo, pattern2, options))
+        {
+        string mdp = m.Value.Split(":")[1];
+            Console.WriteLine($"{wifiName}\t\t{mdp}");
+        }
 }
+Console.ReadLine();

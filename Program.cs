@@ -25,15 +25,14 @@ p.Start();
 string info = "@" + p.StandardOutput.ReadToEnd();
 //Console.WriteLine(info);
 string pattern = @" *: (.*)";
-RegexOptions options = RegexOptions.Multiline;
+RegexOptions options = RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
 List<string> allWifi = new();
 foreach (Match m in Regex.Matches(info, pattern, options))
 {
-    string wifiName = m.Value.Replace(" : ", "-SPPS-").Split(":")[1].Trim().Replace("-SPPS-", " : ").Replace("\n", "");
+    string wifiName = m.Value.Replace("\n", "").Remove(0,2).Trim();
     //Console.WriteLine(wifiName);
     allWifi.Add(wifiName);
 }
-
 foreach(string wifiName in allWifi)
 {
         //Console.WriteLine(wifiName);
